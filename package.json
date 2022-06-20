@@ -1,5 +1,5 @@
 {
-  "name": "osmtogeojson",
+  "name": "@placemark/osmtogeojson",
   "version": "3.0.0-beta.4",
   "description": "convert OSM to geojson",
   "main": "index.js",
