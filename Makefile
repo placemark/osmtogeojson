@@ -3,4 +3,4 @@ osmtogeojson.js: index.js package.json lodash.custom.js node_modules
 coverage: .
 	./node_modules/.bin/istanbul cover node_modules/.bin/_mocha -x lodash.custom.js -- -R spec
 lodash: .
-	lodash exports=node include=clone,merge,isEmpty,isArray,compact,each -d
+	lodash exports=node include=clone,merge,isEmpty,compact,each -d

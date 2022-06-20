@@ -110,7 +110,7 @@ osmtogeojson = function (data, options, featureCallback) {
         };
         nodes.push(geometryNode);
       }
-      if (!_.isArray(way.nodes)) {
+      if (!Array.isArray(way.nodes)) {
         way.nodes = way.geometry.map(function (nd) {
           if (nd !== null)
             // have to skip ref-less nodes
@@ -285,7 +285,7 @@ osmtogeojson = function (data, options, featureCallback) {
         nodes.push(geometryNode);
         return geometryNode.id;
       }
-      if (!_.isArray(way.nodes)) {
+      if (!Array.isArray(way.nodes)) {
         way.nodes = [];
         _.each(nds, function (nd, i) {
           way.nodes.push(
@@ -516,7 +516,7 @@ osmtogeojson = function (data, options, featureCallback) {
     }
     // todo -> after deduplication of relations??
     for (var i = 0; i < rels.length; i++) {
-      if (_.isArray(rels[i].members)) {
+      if (Array.isArray(rels[i].members)) {
         for (var j = 0; j < rels[i].members.length; j++) {
           if (rels[i].members[j].type == "node")
             poinids[rels[i].members[j].ref] = true;
@@ -532,7 +532,7 @@ osmtogeojson = function (data, options, featureCallback) {
         way = options.deduplicator(way, wayids[way.id]);
       }
       wayids[way.id] = way;
-      if (_.isArray(way.nodes)) {
+      if (Array.isArray(way.nodes)) {
         for (var j = 0; j < way.nodes.length; j++) {
           if (typeof way.nodes[j] === "object") continue; // ignore already replaced way node objects
           waynids[way.nodes[j]] = true;
@@ -557,7 +557,7 @@ osmtogeojson = function (data, options, featureCallback) {
     var relsmap = { node: {}, way: {}, relation: {} };
     for (var id in relids) {
       var rel = relids[id];
-      if (!_.isArray(rel.members)) {
+      if (!Array.isArray(rel.members)) {
         if (options.verbose)
           console.warn(
             "Relation",
@@ -642,7 +642,7 @@ osmtogeojson = function (data, options, featureCallback) {
         typeof rels[i].tags != "undefined" &&
         (rels[i].tags["type"] == "route" || rels[i].tags["type"] == "waterway")
       ) {
-        if (!_.isArray(rels[i].members)) {
+        if (!Array.isArray(rels[i].members)) {
           if (options.verbose)
             console.warn(
               "Route",
@@ -764,7 +764,7 @@ osmtogeojson = function (data, options, featureCallback) {
         (rels[i].tags["type"] == "multipolygon" ||
           rels[i].tags["type"] == "boundary")
       ) {
-        if (!_.isArray(rels[i].members)) {
+        if (!Array.isArray(rels[i].members)) {
           if (options.verbose)
             console.warn(
               "Multipolygon",
@@ -1061,7 +1061,7 @@ osmtogeojson = function (data, options, featureCallback) {
         // skip way because it's a deduplication artifact
         continue;
       }
-      if (!_.isArray(ways[i].nodes)) {
+      if (!Array.isArray(ways[i].nodes)) {
         if (options.verbose)
           console.warn(
             "Way",
