@@ -1,12 +1,12 @@
-var _ = require("./lodash.custom.js");
-var rewind = require("@mapbox/geojson-rewind");
+let _ = require("./lodash.custom.js");
+let rewind = require("@mapbox/geojson-rewind");
 
 // see https://wiki.openstreetmap.org/wiki/Overpass_turbo/Polygon_Features
-var polygonFeatures = {};
+let polygonFeatures = {};
 require("osm-polygon-features").forEach(function (tags) {
   if (tags.polygon === "all") polygonFeatures[tags.key] = true;
   else {
-    var list =
+    let list =
         tags.polygon === "whitelist" ? "included_values" : "excluded_values",
       tagValuesObj = {};
     tags.values.forEach(function (value) {
@@ -33,7 +33,7 @@ function default_deduplicator(objectA, objectB) {
   return _.merge(objectA, objectB);
 }
 
-var osmtogeojson = {};
+let osmtogeojson = {};
 
 osmtogeojson = function (data, options, featureCallback) {
   options = _.merge(
@@ -57,7 +57,7 @@ osmtogeojson = function (data, options, featureCallback) {
     options
   );
 
-  var result;
+  let result;
   if (
     (typeof XMLDocument !== "undefined" && data instanceof XMLDocument) ||
     (typeof XMLDocument === "undefined" && data.childNodes)
@@ -68,22 +68,22 @@ osmtogeojson = function (data, options, featureCallback) {
 
   function _overpassJSON2geoJSON(json) {
     // sort elements
-    var nodes = new Array();
-    var ways = new Array();
-    var rels = new Array();
+    let nodes = new Array();
+    let ways = new Array();
+    let rels = new Array();
     // helper functions
     function centerGeometry(object) {
-      var pseudoNode = _.clone(object);
+      let pseudoNode = _.clone(object);
       pseudoNode.lat = object.center.lat;
       pseudoNode.lon = object.center.lon;
       pseudoNode.__is_center_placeholder = true;
       nodes.push(pseudoNode);
     }
     function boundsGeometry(object) {
-      var pseudoWay = _.clone(object);
+      let pseudoWay = _.clone(object);
       pseudoWay.nodes = [];
       function addPseudoNode(lat, lon, i) {
-        var pseudoNode = {
+        let pseudoNode = {
           type: "node",
           id: "_" + pseudoWay.type + "/" + pseudoWay.id + "bounds" + i,
           lat: lat,
@@ -102,7 +102,7 @@ osmtogeojson = function (data, options, featureCallback) {
     }
     function fullGeometryWay(way) {
       function addFullGeometryNode(lat, lon, id) {
-        var geometryNode = {
+        let geometryNode = {
           type: "node",
           id: id,
           lat: lat,
@@ -126,7 +126,7 @@ osmtogeojson = function (data, options, featureCallback) {
     }
     function fullGeometryRelation(rel) {
       function addFullGeometryNode(lat, lon, id) {
-        var geometryNode = {
+        let geometryNode = {
           type: "node",
           id: id,
           lat: lat,
@@ -143,14 +143,14 @@ osmtogeojson = function (data, options, featureCallback) {
           })
         )
           return;
-        var geometryWay = {
+        let geometryWay = {
           type: "way",
           id: id,
           nodes: [],
         };
         function addFullGeometryWayPseudoNode(lat, lon) {
           // todo? do not save the same pseudo node multiple times
-          var geometryPseudoNode = {
+          let geometryPseudoNode = {
             type: "node",
             id: "_anonymous@" + lat + "/" + lon,
             lat: lat,
@@ -168,7 +168,7 @@ osmtogeojson = function (data, options, featureCallback) {
         });
         ways.push(geometryWay);
       }
-      rel.members.forEach(function (member, i) {
+      rel.members.forEach(function (member) {
         if (member.type == "node") {
           if (member.lat) {
             addFullGeometryNode(member.lat, member.lon, member.ref);
@@ -183,7 +183,7 @@ osmtogeojson = function (data, options, featureCallback) {
     }
     // create copies of individual json objects to make sure the original data doesn't get altered
     // todo: cloning is slow: see if this can be done differently!
-    for (var i = 0; i < json.elements.length; i++) {
+    for (let i = 0; i < json.elements.length; i++) {
       switch (json.elements[i].type) {
         case "node":
           var node = json.elements[i];
@@ -223,25 +223,25 @@ osmtogeojson = function (data, options, featureCallback) {
   }
   function _osmXML2geoJSON(xml) {
     // sort elements
-    var nodes = new Array();
-    var ways = new Array();
-    var rels = new Array();
+    let nodes = new Array();
+    let ways = new Array();
+    let rels = new Array();
     // helper function
     function copy_attribute(x, o, attr) {
       if (x.hasAttribute(attr)) o[attr] = x.getAttribute(attr);
     }
     function centerGeometry(object, centroid) {
-      var pseudoNode = _.clone(object);
+      let pseudoNode = _.clone(object);
       copy_attribute(centroid, pseudoNode, "lat");
       copy_attribute(centroid, pseudoNode, "lon");
       pseudoNode.__is_center_placeholder = true;
       nodes.push(pseudoNode);
     }
     function boundsGeometry(object, bounds) {
-      var pseudoWay = _.clone(object);
+      let pseudoWay = _.clone(object);
       pseudoWay.nodes = [];
       function addPseudoNode(lat, lon, i) {
-        var pseudoNode = {
+        let pseudoNode = {
           type: "node",
           id: "_" + pseudoWay.type + "/" + pseudoWay.id + "bounds" + i,
           lat: lat,
@@ -276,7 +276,7 @@ osmtogeojson = function (data, options, featureCallback) {
     }
     function fullGeometryWay(way, nds) {
       function addFullGeometryNode(lat, lon, id) {
-        var geometryNode = {
+        let geometryNode = {
           type: "node",
           id: id,
           lat: lat,
@@ -287,7 +287,7 @@ osmtogeojson = function (data, options, featureCallback) {
       }
       if (!Array.isArray(way.nodes)) {
         way.nodes = [];
-        _.each(nds, function (nd, i) {
+        _.each(nds, function (nd) {
           way.nodes.push(
             "_anonymous@" +
               nd.getAttribute("lat") +
@@ -308,7 +308,7 @@ osmtogeojson = function (data, options, featureCallback) {
     }
     function fullGeometryRelation(rel, members) {
       function addFullGeometryNode(lat, lon, id) {
-        var geometryNode = {
+        let geometryNode = {
           type: "node",
           id: id,
           lat: lat,
@@ -325,14 +325,14 @@ osmtogeojson = function (data, options, featureCallback) {
           })
         )
           return;
-        var geometryWay = {
+        let geometryWay = {
           type: "way",
           id: id,
           nodes: [],
         };
         function addFullGeometryWayPseudoNode(lat, lon) {
           // todo? do not save the same pseudo node multiple times
-          var geometryPseudoNode = {
+          let geometryPseudoNode = {
             type: "node",
             id: "_anonymous@" + lat + "/" + lon,
             lat: lat,
@@ -374,12 +374,12 @@ osmtogeojson = function (data, options, featureCallback) {
       });
     }
     // nodes
-    _.each(xml.getElementsByTagName("node"), function (node, i) {
-      var tags = {};
+    _.each(xml.getElementsByTagName("node"), function (node) {
+      let tags = {};
       _.each(node.getElementsByTagName("tag"), function (tag) {
         tags[tag.getAttribute("k")] = tag.getAttribute("v");
       });
-      var nodeObject = {
+      let nodeObject = {
         type: "node",
       };
       copy_attribute(node, nodeObject, "id");
@@ -394,21 +394,21 @@ osmtogeojson = function (data, options, featureCallback) {
       nodes.push(nodeObject);
     });
     // ways
-    var centroid, bounds;
-    _.each(xml.getElementsByTagName("way"), function (way, i) {
-      var tags = {};
-      var wnodes = [];
+    let centroid, bounds;
+    _.each(xml.getElementsByTagName("way"), function (way) {
+      let tags = {};
+      let wnodes = [];
       _.each(way.getElementsByTagName("tag"), function (tag) {
         tags[tag.getAttribute("k")] = tag.getAttribute("v");
       });
-      var has_full_geometry = false;
+      let has_full_geometry = false;
       _.each(way.getElementsByTagName("nd"), function (nd, i) {
-        var id;
+        let id;
         if ((id = nd.getAttribute("ref"))) wnodes[i] = id;
         if (!has_full_geometry && nd.getAttribute("lat"))
           has_full_geometry = true;
       });
-      var wayObject = {
+      let wayObject = {
         type: "way",
       };
       copy_attribute(way, wayObject, "id");
@@ -428,13 +428,13 @@ osmtogeojson = function (data, options, featureCallback) {
       ways.push(wayObject);
     });
     // relations
-    _.each(xml.getElementsByTagName("relation"), function (relation, i) {
-      var tags = {};
-      var members = [];
+    _.each(xml.getElementsByTagName("relation"), function (relation) {
+      let tags = {};
+      let members = [];
       _.each(relation.getElementsByTagName("tag"), function (tag) {
         tags[tag.getAttribute("k")] = tag.getAttribute("v");
       });
-      var has_full_geometry = false;
+      let has_full_geometry = false;
       _.each(relation.getElementsByTagName("member"), function (member, i) {
         members[i] = {};
         copy_attribute(member, members[i], "ref");
@@ -449,7 +449,7 @@ osmtogeojson = function (data, options, featureCallback) {
         )
           has_full_geometry = true;
       });
-      var relObject = {
+      let relObject = {
         type: "relation",
       };
       copy_attribute(relation, relObject, "id");
@@ -479,7 +479,7 @@ osmtogeojson = function (data, options, featureCallback) {
       if (typeof ignore_tags !== "object") ignore_tags = {};
       if (typeof options.uninterestingTags === "function")
         return !options.uninterestingTags(t, ignore_tags);
-      for (var k in t)
+      for (let k in t)
         if (
           !(options.uninterestingTags[k] === true) &&
           !(ignore_tags[k] === true || ignore_tags[k] === t[k])
@@ -489,22 +489,22 @@ osmtogeojson = function (data, options, featureCallback) {
     }
     // helper function to extract meta information
     function build_meta_information(object) {
-      var res = {
+      let res = {
         timestamp: object.timestamp,
         version: object.version,
         changeset: object.changeset,
         user: object.user,
         uid: object.uid,
       };
-      for (var k in res) if (res[k] === undefined) delete res[k];
+      for (let k in res) if (res[k] === undefined) delete res[k];
       return res;
     }
 
     // some data processing (e.g. filter nodes only used for ways)
-    var nodeids = new Object();
-    var poinids = new Object();
+    let nodeids = new Object();
+    let poinids = new Object();
     for (var i = 0; i < nodes.length; i++) {
-      var node = nodes[i];
+      let node = nodes[i];
       if (nodeids[node.id] !== undefined) {
         // handle input data duplication
         node = options.deduplicator(node, nodeids[node.id]);
@@ -515,7 +515,7 @@ osmtogeojson = function (data, options, featureCallback) {
         poinids[node.id] = true;
     }
     // todo -> after deduplication of relations??
-    for (var i = 0; i < rels.length; i++) {
+    for (let i = 0; i < rels.length; i++) {
       if (Array.isArray(rels[i].members)) {
         for (var j = 0; j < rels[i].members.length; j++) {
           if (rels[i].members[j].type == "node")
@@ -523,40 +523,40 @@ osmtogeojson = function (data, options, featureCallback) {
         }
       }
     }
-    var wayids = new Object();
-    var waynids = new Object();
-    for (var i = 0; i < ways.length; i++) {
-      var way = ways[i];
+    let wayids = new Object();
+    let waynids = new Object();
+    for (let i = 0; i < ways.length; i++) {
+      let way = ways[i];
       if (wayids[way.id]) {
         // handle input data duplication
         way = options.deduplicator(way, wayids[way.id]);
       }
       wayids[way.id] = way;
       if (Array.isArray(way.nodes)) {
-        for (var j = 0; j < way.nodes.length; j++) {
+        for (let j = 0; j < way.nodes.length; j++) {
           if (typeof way.nodes[j] === "object") continue; // ignore already replaced way node objects
           waynids[way.nodes[j]] = true;
           way.nodes[j] = nodeids[way.nodes[j]];
         }
       }
     }
-    var pois = new Array();
-    for (var id in nodeids) {
-      var node = nodeids[id];
+    let pois = new Array();
+    for (let id in nodeids) {
+      let node = nodeids[id];
       if (!waynids[id] || poinids[id]) pois.push(node);
     }
-    var relids = new Array();
-    for (var i = 0; i < rels.length; i++) {
-      var rel = rels[i];
+    let relids = new Array();
+    for (let i = 0; i < rels.length; i++) {
+      let rel = rels[i];
       if (relids[rel.id]) {
         // handle input data duplication
         rel = options.deduplicator(rel, relids[rel.id]);
       }
       relids[rel.id] = rel;
     }
-    var relsmap = { node: {}, way: {}, relation: {} };
-    for (var id in relids) {
-      var rel = relids[id];
+    let relsmap = { node: {}, way: {}, relation: {} };
+    for (let id in relids) {
+      let rel = relids[id];
       if (!Array.isArray(rel.members)) {
         if (options.verbose)
           console.warn(
@@ -566,9 +566,9 @@ osmtogeojson = function (data, options, featureCallback) {
           );
         continue; // ignore relations without members (e.g. returned by an ids_only query)
       }
-      for (var j = 0; j < rel.members.length; j++) {
-        var m_type = rel.members[j].type;
-        var m_ref = rel.members[j].ref;
+      for (let j = 0; j < rel.members.length; j++) {
+        let m_type = rel.members[j].type;
+        let m_ref = rel.members[j].ref;
         if (typeof m_ref !== "number") {
           // de-namespace full geometry content
           m_ref = m_ref.replace("_fullGeom", "");
@@ -594,8 +594,8 @@ osmtogeojson = function (data, options, featureCallback) {
       }
     }
     // construct geojson
-    var geojson;
-    var geojsonnodes = [];
+    let geojson;
+    let geojsonnodes = [];
     for (i = 0; i < pois.length; i++) {
       if (
         typeof pois[i].lon == "undefined" ||
@@ -629,10 +629,10 @@ osmtogeojson = function (data, options, featureCallback) {
       if (!featureCallback) geojsonnodes.push(feature);
       else featureCallback(feature);
     }
-    var geojsonlines = [];
-    var geojsonpolygons = [];
+    let geojsonlines = [];
+    let geojsonpolygons = [];
     // process multipolygons
-    for (var i = 0; i < rels.length; i++) {
+    for (let i = 0; i < rels.length; i++) {
       // todo: refactor such that this loops over relids instead of rels?
       if (relids[rels[i].id] !== rels[i]) {
         // skip relation because it's a deduplication artifact
@@ -669,14 +669,14 @@ osmtogeojson = function (data, options, featureCallback) {
         else featureCallback(rewind(feature));
 
         function construct_multilinestring(rel) {
-          var is_tainted = false;
+          let is_tainted = false;
           // prepare route members
-          var members;
+          let members;
           members = rel.members.filter(function (m) {
             return m.type === "way";
           });
           members = members.map(function (m) {
-            var way = wayids[m.ref];
+            let way = wayids[m.ref];
             if (way === undefined || way.nodes === undefined) {
               // check for missing ways
               if (options.verbose)
@@ -710,11 +710,11 @@ osmtogeojson = function (data, options, featureCallback) {
           });
           members = _.compact(members);
           // construct connected linestrings
-          var linestrings;
+          let linestrings;
           linestrings = join(members);
 
           // sanitize mp-coordinates (remove empty clusters or rings, {lat,lon,...} to [lon,lat]
-          var coords = [];
+          let coords = [];
           coords = _.compact(
             linestrings.map(function (linestring) {
               return _.compact(
@@ -736,7 +736,7 @@ osmtogeojson = function (data, options, featureCallback) {
           }
 
           // mp parsed, now construct the geoJSON
-          var feature = {
+          let feature = {
             type: "Feature",
             id: rel.type + "/" + rel.id,
             properties: {
@@ -773,8 +773,8 @@ osmtogeojson = function (data, options, featureCallback) {
             );
           continue; // ignore relations without members (e.g. returned by an ids_only query)
         }
-        var outer_count = 0;
-        for (var j = 0; j < rels[i].members.length; j++)
+        let outer_count = 0;
+        for (let j = 0; j < rels[i].members.length; j++)
           if (rels[i].members[j].role == "outer") outer_count++;
           else if (options.verbose && rels[i].members[j].role != "inner")
             console.warn(
@@ -820,7 +820,7 @@ osmtogeojson = function (data, options, featureCallback) {
           feature = construct_multipolygon(rels[i], rels[i]);
         } else {
           // simple multipolygon
-          var outer_way = rels[i].members.filter(function (m) {
+          let outer_way = rels[i].members.filter(function (m) {
             return m.role === "outer";
           })[0];
           outer_way = wayids[outer_way.ref];
@@ -851,19 +851,19 @@ osmtogeojson = function (data, options, featureCallback) {
         else featureCallback(rewind(feature));
 
         function construct_multipolygon(tag_object, rel) {
-          var is_tainted = false;
-          var mp_geometry = simple_mp ? "way" : "relation",
+          let is_tainted = false;
+          let mp_geometry = simple_mp ? "way" : "relation",
             mp_id =
               typeof tag_object.id === "number"
                 ? tag_object.id
                 : +tag_object.id.replace("_fullGeom", "");
           // prepare mp members
-          var members;
+          let members;
           members = rel.members.filter(function (m) {
             return m.type === "way";
           });
           members = members.map(function (m) {
-            var way = wayids[m.ref];
+            let way = wayids[m.ref];
             if (way === undefined || way.nodes === undefined) {
               // check for missing ways
               if (options.verbose)
@@ -898,7 +898,7 @@ osmtogeojson = function (data, options, featureCallback) {
           });
           members = _.compact(members);
           // construct outer and inner rings
-          var outers, inners;
+          let outers, inners;
           outers = join(
             members.filter(function (m) {
               return m.role === "outer";
@@ -910,14 +910,14 @@ osmtogeojson = function (data, options, featureCallback) {
             })
           );
           // sort rings
-          var mp;
+          let mp;
           function findOuter(inner) {
-            var polygonIntersectsPolygon = function (outer, inner) {
-              for (var i = 0; i < inner.length; i++)
+            let polygonIntersectsPolygon = function (outer, inner) {
+              for (let i = 0; i < inner.length; i++)
                 if (pointInPolygon(inner[i], outer)) return true;
               return false;
             };
-            var mapCoordinates = function (from) {
+            let mapCoordinates = function (from) {
               return from.map(function (n) {
                 return [+n.lat, +n.lon];
               });
@@ -926,19 +926,19 @@ osmtogeojson = function (data, options, featureCallback) {
             // based on https://github.com/substack/point-in-polygon,
             // ray-casting algorithm based on http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
             var pointInPolygon = function (point, polygon) {
-              var x = point[0],
+              let x = point[0],
                 y = point[1],
                 inside = false;
               for (
-                var i = 0, j = polygon.length - 1;
+                let i = 0, j = polygon.length - 1;
                 i < polygon.length;
                 j = i++
               ) {
-                var xi = polygon[i][0],
+                let xi = polygon[i][0],
                   yi = polygon[i][1];
-                var xj = polygon[j][0],
+                let xj = polygon[j][0],
                   yj = polygon[j][1];
-                var intersect =
+                let intersect =
                   yi > y != yj > y &&
                   x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
                 if (intersect) inside = !inside;
@@ -946,7 +946,7 @@ osmtogeojson = function (data, options, featureCallback) {
               return inside;
             };
             // stolen from iD/relation.js
-            var o, outer;
+            let o, outer;
             // todo: all this coordinate mapping makes this unneccesarily slow.
             // see the "todo: this is slow! :(" above.
             inner = mapCoordinates(inner);
@@ -963,8 +963,8 @@ osmtogeojson = function (data, options, featureCallback) {
           mp = outers.map(function (o) {
             return [o];
           });
-          for (var j = 0; j < inners.length; j++) {
-            var o = findOuter(inners[j]);
+          for (let j = 0; j < inners.length; j++) {
+            let o = findOuter(inners[j]);
             if (o !== undefined) mp[o].push(inners[j]);
             else if (options.verbose)
               console.warn(
@@ -976,10 +976,10 @@ osmtogeojson = function (data, options, featureCallback) {
             // We're going to ignore holes in empty space.
           }
           // sanitize mp-coordinates (remove empty clusters or rings, {lat,lon,...} to [lon,lat]
-          var mp_coords = [];
+          let mp_coords = [];
           mp_coords = _.compact(
             mp.map(function (cluster) {
-              var cl = _.compact(
+              let cl = _.compact(
                 cluster.map(function (ring) {
                   if (ring.length < 4) {
                     // todo: is this correct: ring.length < 4 ?
@@ -1020,13 +1020,13 @@ osmtogeojson = function (data, options, featureCallback) {
               );
             return false; // ignore multipolygons without coordinates
           }
-          var mp_type = "MultiPolygon";
+          let mp_type = "MultiPolygon";
           if (mp_coords.length === 1) {
             mp_type = "Polygon";
             mp_coords = mp_coords[0];
           }
           // mp parsed, now construct the geoJSON
-          var feature = {
+          let feature = {
             type: "Feature",
             id: tag_object.type + "/" + mp_id,
             properties: {
@@ -1055,7 +1055,7 @@ osmtogeojson = function (data, options, featureCallback) {
       }
     }
     // process lines and polygons
-    for (var i = 0; i < ways.length; i++) {
+    for (let i = 0; i < ways.length; i++) {
       // todo: refactor such that this loops over wayids instead of ways?
       if (wayids[ways[i].id] !== ways[i]) {
         // skip way because it's a deduplication artifact
@@ -1077,7 +1077,7 @@ osmtogeojson = function (data, options, featureCallback) {
       }
       ways[i].tainted = false;
       ways[i].hidden = false;
-      var coords = new Array();
+      let coords = new Array();
       for (j = 0; j < ways[i].nodes.length; j++) {
         if (typeof ways[i].nodes[j] == "object")
           coords.push([+ways[i].nodes[j].lon, +ways[i].nodes[j].lat]);
@@ -1101,7 +1101,7 @@ osmtogeojson = function (data, options, featureCallback) {
           );
         continue;
       }
-      var way_type = "LineString"; // default
+      let way_type = "LineString"; // default
       if (
         typeof ways[i].nodes[0] != "undefined" &&
         typeof ways[i].nodes[ways[i].nodes.length - 1] != "undefined" && // way has its start/end nodes loaded
@@ -1165,15 +1165,15 @@ osmtogeojson = function (data, options, featureCallback) {
     return geojson;
   }
   function _isPolygonFeature(tags) {
-    var polygonFeatures = options.polygonFeatures;
+    let polygonFeatures = options.polygonFeatures;
     if (typeof polygonFeatures === "function") return polygonFeatures(tags);
     // explicitely tagged non-areas
     if (tags["area"] === "no") return false;
     // assuming that a typical OSM way has in average less tags than
     // the polygonFeatures list, this way around should be faster
-    for (var key in tags) {
-      var val = tags[key];
-      var pfk = polygonFeatures[key];
+    for (let key in tags) {
+      let val = tags[key];
+      let pfk = polygonFeatures[key];
       // continue with next if tag is unknown or not "categorizing"
       if (typeof pfk === "undefined") continue;
       // continue with next if tag is explicitely un-set ("building=no")
@@ -1190,17 +1190,17 @@ osmtogeojson = function (data, options, featureCallback) {
 
 // helper that joins adjacent osm ways into linestrings or linear rings
 function join(ways) {
-  var _first = function (arr) {
+  let _first = function (arr) {
     return arr[0];
   };
-  var _last = function (arr) {
+  let _last = function (arr) {
     return arr[arr.length - 1];
   };
-  var _fitTogether = function (n1, n2) {
+  let _fitTogether = function (n1, n2) {
     return n1 !== undefined && n2 !== undefined && n1.id === n2.id;
   };
   // stolen from iD/relation.js
-  var joined = [],
+  let joined = [],
     current,
     first,
     last,
