@@ -30,21 +30,21 @@
     "JSONStream": "0.8.0",
     "concat-stream": "2.0.0",
     "geojson-numeric": "0.2.1",
-    "@mapbox/geojson-rewind": "0.4.0",
+    "@mapbox/geojson-rewind": "0.5.2",
     "htmlparser2": "3.5.1",
-    "optimist": "~0.3.5",
-    "osm-polygon-features": "^0.9.1",
+    "optimist": "~0.6.1",
+    "osm-polygon-features": "^0.9.2",
     "tiny-osmpbf": "^0.1.0",
-    "xmldom": "~0.1.16"
+    "xmldom": "~0.6.0"
   },
   "optionalDependencies": {
     "@types/geojson": "^7946.0"
   },
   "devDependencies": {
-    "expect.js": "~0.2.0",
+    "expect.js": "~0.3.1",
     "istanbul": "^0.4.5",
-    "mocha": "~1.12.0",
-    "tape": "~2.10.2",
+    "mocha": "~10.0.0",
+    "tape": "~5.5.3",
     "faucet": "~0.0.1"
   },
   "engines": {
