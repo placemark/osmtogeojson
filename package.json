@@ -10,12 +10,9 @@
     "test": "npm run test-lib",
     "test-lib": "mocha -R spec"
   },
-  "bin": {
-    "osmtogeojson": "osmtogeojson"
-  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/tyrasd/osmtogeojson.git"
+    "url": "https://github.com/placemark/osmtogeojson.git"
   },
   "keywords": [
     "openstreetmap",
@@ -24,7 +21,7 @@
   "author": "Martin Raifer",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/tyrasd/osmtogeojson/issues"
+    "url": "https://github.com/placemark/osmtogeojson/issues"
   },
   "dependencies": {
     "@mapbox/geojson-rewind": "0.5.2",
@@ -44,6 +41,6 @@
     "tape": "~5.5.3"
   },
   "engines": {
-    "node": ">=0.5"
+    "node": ">=12"
   }
 }
