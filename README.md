@@ -1,6 +1,11 @@
 osmtogeojson
 ============
 
+This is a fork of osmtogeojson. Main differences:
+
+- CLI and its dependencies removed.
+- Upgrade to xmldom/xmldom
+
 Converts [OSM](http://openstreetmap.org) [data](http://wiki.openstreetmap.org/wiki/OSM_XML) to [GeoJSON](http://www.geojson.org/). Try the [demo](http://tyrasd.github.io/osmtogeojson/)!
 
 * stable
@@ -13,27 +18,6 @@ Converts [OSM](http://openstreetmap.org) [data](http://wiki.openstreetmap.org/wi
 This code is used in and maintained by the [overpass turbo](http://github.com/tyrasd/overpass-ide) project.
 
 [![Build Status](https://secure.travis-ci.org/tyrasd/osmtogeojson.png)](https://travis-ci.org/tyrasd/osmtogeojson)
-
-Usage
------
-
-### command line tool
-  
-Installation:
-
-      $ npm install -g osmtogeojson
-
-Usage:
-
-    $ osmtogeojson file.osm > file.geojson
-
-Supported command line options are shown with:
-
-    $ osmtogeojson --help
-
-When working with extra large data files (≳ 100 MB) it is recommended to run the programm with a little extra memory to avoid *process out of memory* errors. The easiest way to do this is by running the command as `node <path-to-osmtogeojson>` and setting the `--max_old_space_size=…` parameter to the available memory size in MB (osmtogeojson typically needs about 4-5 times the input data size). On a Unix system, you can use the following command:
-
-    $ node --max_old_space_size=8192 `which osmtogeojson` large.osm > large.geojson
 
 ### nodejs library
 
