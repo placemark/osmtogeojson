@@ -68,9 +68,9 @@ osmtogeojson = function (data, options, featureCallback) {
 
   function _overpassJSON2geoJSON(json) {
     // sort elements
-    let nodes = new Array();
-    let ways = new Array();
-    let rels = new Array();
+    let nodes = [];
+    let ways = [];
+    let rels = [];
     // helper functions
     function centerGeometry(object) {
       let pseudoNode = _.clone(object);
@@ -223,9 +223,9 @@ osmtogeojson = function (data, options, featureCallback) {
   }
   function _osmXML2geoJSON(xml) {
     // sort elements
-    let nodes = new Array();
-    let ways = new Array();
-    let rels = new Array();
+    let nodes = [];
+    let ways = [];
+    let rels = [];
     // helper function
     function copy_attribute(x, o, attr) {
       if (x.hasAttribute(attr)) o[attr] = x.getAttribute(attr);
@@ -501,9 +501,9 @@ osmtogeojson = function (data, options, featureCallback) {
     }
 
     // some data processing (e.g. filter nodes only used for ways)
-    let nodeids = new Object();
-    let poinids = new Object();
-    for (var i = 0; i < nodes.length; i++) {
+    let nodeids = {};
+    let poinids = {};
+    for (let i = 0; i < nodes.length; i++) {
       let node = nodes[i];
       if (nodeids[node.id] !== undefined) {
         // handle input data duplication
@@ -517,14 +517,14 @@ osmtogeojson = function (data, options, featureCallback) {
     // todo -> after deduplication of relations??
     for (let i = 0; i < rels.length; i++) {
       if (Array.isArray(rels[i].members)) {
-        for (var j = 0; j < rels[i].members.length; j++) {
+        for (let j = 0; j < rels[i].members.length; j++) {
           if (rels[i].members[j].type == "node")
             poinids[rels[i].members[j].ref] = true;
         }
       }
     }
-    let wayids = new Object();
-    let waynids = new Object();
+    let wayids = {};
+    let waynids = {};
     for (let i = 0; i < ways.length; i++) {
       let way = ways[i];
       if (wayids[way.id]) {
@@ -540,12 +540,12 @@ osmtogeojson = function (data, options, featureCallback) {
         }
       }
     }
-    let pois = new Array();
+    let pois = [];
     for (let id in nodeids) {
       let node = nodeids[id];
       if (!waynids[id] || poinids[id]) pois.push(node);
     }
-    let relids = new Array();
+    let relids = [];
     for (let i = 0; i < rels.length; i++) {
       let rel = rels[i];
       if (relids[rel.id]) {
@@ -912,11 +912,6 @@ osmtogeojson = function (data, options, featureCallback) {
           // sort rings
           let mp;
           function findOuter(inner) {
-            let polygonIntersectsPolygon = function (outer, inner) {
-              for (let i = 0; i < inner.length; i++)
-                if (pointInPolygon(inner[i], outer)) return true;
-              return false;
-            };
             let mapCoordinates = function (from) {
               return from.map(function (n) {
                 return [+n.lat, +n.lon];
@@ -925,26 +920,7 @@ osmtogeojson = function (data, options, featureCallback) {
             // stolen from iD/geo.js,
             // based on https://github.com/substack/point-in-polygon,
             // ray-casting algorithm based on http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
-            var pointInPolygon = function (point, polygon) {
-              let x = point[0],
-                y = point[1],
-                inside = false;
-              for (
-                let i = 0, j = polygon.length - 1;
-                i < polygon.length;
-                j = i++
-              ) {
-                let xi = polygon[i][0],
-                  yi = polygon[i][1];
-                let xj = polygon[j][0],
-                  yj = polygon[j][1];
-                let intersect =
-                  yi > y != yj > y &&
-                  x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
-                if (intersect) inside = !inside;
-              }
-              return inside;
-            };
+
             // stolen from iD/relation.js
             let o, outer;
             // todo: all this coordinate mapping makes this unneccesarily slow.
@@ -1077,8 +1053,8 @@ osmtogeojson = function (data, options, featureCallback) {
       }
       ways[i].tainted = false;
       ways[i].hidden = false;
-      let coords = new Array();
-      for (j = 0; j < ways[i].nodes.length; j++) {
+      let coords = [];
+      for (let j = 0; j < ways[i].nodes.length; j++) {
         if (typeof ways[i].nodes[j] == "object")
           coords.push([+ways[i].nodes[j].lon, +ways[i].nodes[j].lat]);
         else {
@@ -1107,13 +1083,13 @@ osmtogeojson = function (data, options, featureCallback) {
         typeof ways[i].nodes[ways[i].nodes.length - 1] != "undefined" && // way has its start/end nodes loaded
         ways[i].nodes[0].id === ways[i].nodes[ways[i].nodes.length - 1].id && // ... and forms a closed ring
         ((typeof ways[i].tags != "undefined" && // ... and has tags
-          _isPolygonFeature(ways[i].tags)) || // ... and tags say it is a polygon // or is a placeholder for a bounds geometry
+          _isPolygonFeature(ways[i].tags, options)) || // ... and tags say it is a polygon // or is a placeholder for a bounds geometry
           ways[i].__is_bounds_placeholder)
       ) {
         way_type = "Polygon";
         coords = [coords];
       }
-      var feature = {
+      let feature = {
         type: "Feature",
         id: ways[i].type + "/" + ways[i].id,
         properties: {
@@ -1164,29 +1140,52 @@ osmtogeojson = function (data, options, featureCallback) {
     geojson = rewind(geojson);
     return geojson;
   }
-  function _isPolygonFeature(tags) {
-    let polygonFeatures = options.polygonFeatures;
-    if (typeof polygonFeatures === "function") return polygonFeatures(tags);
-    // explicitely tagged non-areas
-    if (tags["area"] === "no") return false;
-    // assuming that a typical OSM way has in average less tags than
-    // the polygonFeatures list, this way around should be faster
-    for (let key in tags) {
-      let val = tags[key];
-      let pfk = polygonFeatures[key];
-      // continue with next if tag is unknown or not "categorizing"
-      if (typeof pfk === "undefined") continue;
-      // continue with next if tag is explicitely un-set ("building=no")
-      if (val === "no") continue;
-      // check polygon features for: general acceptance, included or excluded values
-      if (pfk === true) return true;
-      if (pfk.included_values && pfk.included_values[val] === true) return true;
-      if (pfk.excluded_values && pfk.excluded_values[val] !== true) return true;
-    }
-    // if no tags matched, this ain't no area.
-    return false;
-  }
 };
+
+function pointInPolygon(point, polygon) {
+  let x = point[0],
+    y = point[1],
+    inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    let xi = polygon[i][0],
+      yi = polygon[i][1];
+    let xj = polygon[j][0],
+      yj = polygon[j][1];
+    let intersect =
+      yi > y != yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
+function polygonIntersectsPolygon(outer, inner) {
+  for (let i = 0; i < inner.length; i++)
+    if (pointInPolygon(inner[i], outer)) return true;
+  return false;
+}
+
+function _isPolygonFeature(tags, options) {
+  let polygonFeatures = options.polygonFeatures;
+  if (typeof polygonFeatures === "function") return polygonFeatures(tags);
+  // explicitely tagged non-areas
+  if (tags["area"] === "no") return false;
+  // assuming that a typical OSM way has in average less tags than
+  // the polygonFeatures list, this way around should be faster
+  for (let key in tags) {
+    let val = tags[key];
+    let pfk = polygonFeatures[key];
+    // continue with next if tag is unknown or not "categorizing"
+    if (typeof pfk === "undefined") continue;
+    // continue with next if tag is explicitely un-set ("building=no")
+    if (val === "no") continue;
+    // check polygon features for: general acceptance, included or excluded values
+    if (pfk === true) return true;
+    if (pfk.included_values && pfk.included_values[val] === true) return true;
+    if (pfk.excluded_values && pfk.excluded_values[val] !== true) return true;
+  }
+  // if no tags matched, this ain't no area.
+  return false;
+}
 
 // helper that joins adjacent osm ways into linestrings or linear rings
 function join(ways) {
